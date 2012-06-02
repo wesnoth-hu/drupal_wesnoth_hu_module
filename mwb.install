@@ -1,0 +1,244 @@
+<?php 
+
+function mwb_schema(){
+  $schema['mwb_csoportok'] = array(
+    'description' => 'A versenyek csoportjait tárolja.',
+    'fields' => array(
+      'csid' => array(
+        'description' => 'Csoport azonosítója',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nev' => array(
+        'description' => 'Csoport neve',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'letszam' => array(
+        'description' => 'Csoport létszáma',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'jatekosok' => array(
+        'description' => 'Csoportban lévő játékosok',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'szulo' => array(
+        'description' => 'Csoport szülőcsoportja',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'weight' => array(
+        'description' => 'Csoport súlya',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('csid'),
+  );
+/*
+      db_query("CREATE TABLE {mwb_csoportok} (
+  `csid` int(11) NOT NULL AUTO_INCREMENT,
+  `nev` varchar(50) COLLATE utf8_bin NOT NULL,
+  `letszam` int(11) NOT NULL,
+  `jatekosok` text COLLATE utf8_bin NOT NULL,
+  `szulo` varchar(50) COLLATE utf8_bin NOT NULL,
+  `weight` tinyint(4) NOT NULL,
+  PRIMARY KEY (`csid`)
+) ENGINE=MyISAM AUTO_INCREMENT=101 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;");
+*/
+
+  $schema['mwb_jelentkezok'] = array(
+    'description' => 'A versenyre jelentkezett felhasználókat tárolja.',
+    'fields' => array(
+      'jid' => array(
+        'description' => 'Jelentkező azonosítója',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'Jelentkező felhasználói azonosítója',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nev' => array(
+        'description' => 'Jelentkező versenyen használt neve',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'email' => array(
+        'description' => 'Jelentkező versenyen használt e-mail címe',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => TRUE,
+      ),
+      'csapat' => array(
+        'description' => 'Jelentkező csapatneve',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'faj' => array(
+        'description' => 'Jelentkező válaszott faja',
+        'type' => 'varchar',
+        'length' => 25,
+        'default' => '',
+      ),
+      'vezer' => array(
+        'description' => 'Jelentkező választott vezére',
+        'type' => 'varchar',
+        'length' => 25,
+        'default' => '',
+      ),
+      'faj2' => array(
+        'description' => 'Jelentkező másik választott faja (szövetségesek csatájához)',
+        'type' => 'varchar',
+        'length' => 25,
+        'default' => '',
+      ),
+      'vezer2' => array(
+        'description' => 'Jelentkező másik választott vezére (szövetségesek csatájához)',
+        'type' => 'varchar',
+        'length' => 25,
+        'default' => '',
+      ),
+      'kizarva' => array(
+        'description' => 'Jelentkező ki van-e zárva',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'kiemeles' => array(
+        'description' => 'Jelentkező ki van-e emelve',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('jid'),
+  );
+/*
+CREATE TABLE `drupal_mwb_jelentkezok` (
+  `jid` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(11) NOT NULL,
+  `nev` varchar(50) COLLATE utf8_bin NOT NULL,
+  `email` varchar(100) COLLATE utf8_bin NOT NULL,
+  `csapat` varchar(50) COLLATE utf8_bin NOT NULL,
+  `faj` varchar(25) COLLATE utf8_bin DEFAULT NULL,
+  `vezer` varchar(25) COLLATE utf8_bin DEFAULT NULL,
+  `faj2` varchar(25) COLLATE utf8_bin DEFAULT NULL,
+  `vezer2` varchar(25) COLLATE utf8_bin DEFAULT NULL,
+  `kizarva` tinyint(1) NOT NULL DEFAULT '0',
+  `kiemeles` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`jid`),
+  KEY `jid` (`jid`)
+) ENGINE=MyISAM AUTO_INCREMENT=99 DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+*/
+
+  $schema['mwb_merkozesek'] = array(
+    'description' => 'A verseny mérkőzéseit tárolja.',
+    'fields' => array(
+      'mid' => array(
+        'description' => 'Mérkőzés azonosítója',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'jatekos1' => array(
+        'description' => 'Első játékos azonosítója',
+	'type' => 'int',
+        'unsigned' => TRUE,
+	'not null' => TRUE,
+      ),
+      'jatekos2' => array(
+        'description' => 'Második játékos azonosítója',
+	'type' => 'int',
+        'unsigned' => TRUE,
+	'not null' => TRUE,
+      ),
+      'gyoztes' => array(
+        'description' => 'Győztes azonosítója',
+	'type' => 'int',
+        'unsigned' => TRUE,
+	'not null' => TRUE,
+      ),
+      'palya' => array(
+        'description' => 'Pálya neve',
+	'type' => 'varchar',
+	'length' => 50,
+	'not null' => TRUE,
+      ),
+      'idopont' => array(
+	'description' => 'Időpont(?)',
+	'type' => 'datetime',
+	'not null' => TRUE,
+      ),
+      'csoport' => array(
+      	'description' => 'Mérkőzés csoportjának azonosítója',
+	'type' => 'int',
+        'unsigned' => TRUE,
+	'not null' => TRUE,
+      ),
+      'fiktiv' => array(
+	'description' => 'Mérkőzés fiktív-e',
+	'type' => 'int',
+	'size' => 'tiny',
+	'default' => 0,
+      ),
+      'rid' => array(
+      	'description' => 'Visszajátszás azonosítója',
+	'type' => 'int',
+        'unsigned' => TRUE,
+	'not null' => TRUE,
+      ),
+      'ellenorizve' => array(
+	'description' => 'Mérkőzés ellenőrizve van-e',
+	'type' => 'int',
+	'size' => 'tiny',
+	'default' => 0,
+      ),
+    ),
+    'primary key' => array('mid'),
+  );
+/*
+delimiter $$
+
+CREATE TABLE `drupal_mwb_merkozesek` (
+  `mid` int(11) NOT NULL AUTO_INCREMENT,
+  `jatekos1` int(11) NOT NULL,
+  `jatekos2` int(11) NOT NULL,
+  `gyoztes` int(11) NOT NULL,
+  `palya` varchar(50) COLLATE utf8_bin NOT NULL,
+  `idopont` datetime NOT NULL,
+  `csoport` int(11) NOT NULL,
+  `fiktiv` tinyint(1) NOT NULL,
+  `rid` int(11) NOT NULL DEFAULT '0',
+  `ellenorizve` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`mid`),
+  KEY `mid` (`mid`)
+) ENGINE=MyISAM AUTO_INCREMENT=1068 DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+*/
+
+  return $schema;
+}
+
+function mwb_install() {
+  // Create my tables.
+  drupal_install_schema('mwb');
+}
+
+function mwb_uninstall() {
+  // Drop my tables.
+  drupal_uninstall_schema('mwb');
+}
+
