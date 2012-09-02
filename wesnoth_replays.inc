@@ -1,21 +1,4 @@
 <?php
-// $Id$
-
-function wesnoth_replays_init(){
-  // változók definiálása
-  $GLOBALS['_wreplays_tipus'] = array(
-    'egyeb' => 'Egyéb',
-    'bajnoksag' => 'Bajnokság',
-  );
-
-  $GLOBALS['_wreplays_bajnoksagmappa'] = '2011_mwb';
-  
-  $GLOBALS['_wreplays_csoportok'] = array();
-  $query = db_query("SELECT `csid`, `nev` FROM {mwb_csoportok}");
-  while($r = db_fetch_array($query)){
-    $GLOBALS['_wreplays_csoportok'][$r['csid']] = $r['nev'];
-  }
-}
 
 function wesnoth_replays_node_info() {
   return array(
@@ -25,10 +8,6 @@ function wesnoth_replays_node_info() {
       'description' => "A wesnoth visszajátszásokat lehet feltenni vele.",
     )
   );
-}
-
-function wesnoth_replays_perm() {
-  return array('access wesnoth replays', 'administer wesnoth replays', 'edit any wesnoth replays', 'edit own wesnoth replays');
 }
 
 function wesnoth_replays_access($op, $node, $account){

@@ -1,0 +1,268 @@
+<?php
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the onthisdate module
+*/
+
+require_once 'wesnoth_hu_blocks.inc';
+
+function wesnoth_hu_init(){
+  //$GLOBALS['_mwb_jelentkezesi_idoszak'] = false;
+
+  // torna vagy bajnokság
+  $GLOBALS['_wesnoth_hu_verseny_tipus'] = 'bajnoksag';
+  $GLOBALS['_wesnoth_hu_verseny_nev'] = 'Magyar Wesnoth Bajnokság 2012';
+  
+  $GLOBALS['_mwb_alap_csoport'] = 66;
+
+  $GLOBALS['_mwb_fajok'] = array(
+    'random' => "Véletlenszerű",
+    'loyalists' => "Hűségesek",
+    'rebels' => "Lázadók",
+    'northeners' => "Északiak",
+    'undead' => "Élőholtak",
+    'knalgans' => "Knalgai szövetség",
+    'drakes' => "Perzsekények",
+  );
+  
+  $GLOBALS['_mwb_vezerek'] = array(
+    'random' => 'Véletlenszerű',
+    'ures1' => '--',
+    'lieutenant' => 'Hadnagy',
+    'swordsman' => 'Kardforgató',
+    'pikeman' => 'Pikás gyalogos',
+    'javelineer' => 'Dárdahajító',
+    'shock_trooper' => 'Darabont',
+    'longbowman' => 'Hosszúíj nyilas',
+    'white_mage' => 'Fehér mágus',
+    'red_mage' => 'Vörös mágus',
+    'ures2' => '--',
+    'elvish_captain' => 'Tünde kapitány',
+    'elvish_hero' => 'Tünde hős',
+    'elvish_ranger' => 'Tünde vadász',
+    'elvish_marksman' => 'Tünde mesterlövész',
+    'elvish_druid' => 'Tünde druida',
+    'elvish_sorceress' => 'Tünde boszorkány',
+    'white_mage' => 'Fehér mágus',
+    'red_mage' => 'Vörös mágus',
+    'elder_wose' => 'Agg fapásztor',
+    'ures3' => '--',
+    'orcish_warrior' => 'Ork harcos',
+    'troll' => 'Troll',
+    'troll_rocklobber' => 'Troll kőhajító',
+    'orcish_crossbowman' => 'Ork számszeríjász',
+    'orcish_slayer' => 'Ork vérengző',
+    'ures4' => '--',
+    'dark_sorcerer' => 'Sötét varázsló',
+    'revenant' => 'Bosszúálló',
+    'deathblade' => 'Halálpenge',
+    'bone_shooter' => 'Csontvadász',
+    'necrophage' => 'Hullafaló',
+    'ures5' => '--',
+    'dwarvish_steelclad' => 'Törp vértes',
+    'dwarvish_thunderguard' => 'Törp villámörző',
+    'dwarvish_stalwart' => 'Rettenthetetlen törp',
+    'rogue' => 'Haramia',
+    'trapper' => 'Prémvadász',
+    'ures6' => '--',
+    'drake_flare' => 'Perzsekény tűzmester',
+    'fire_drake' => 'Tűzperzsekény',
+    'drake_trasher' => 'Perzsekény vagdalkozó',
+    'drake_arbiter' => 'Perzsekény zsarnok',
+    'drake_warrior' => 'Perzsekény harcos',
+    'saurian_oracle' => 'Gyík jövendőmondó',
+    'saurian_soothsayer' => 'Gyík kuruzsló',
+  );
+
+  // változók definiálása
+  $GLOBALS['_wreplays_tipus'] = array(
+    'egyeb' => 'Egyéb',
+    'bajnoksag' => 'Bajnokság',
+  );
+
+  $GLOBALS['_wreplays_bajnoksagmappa'] = '2011_mwb';
+  
+  $GLOBALS['_wreplays_csoportok'] = array();
+  $query = db_query("SELECT `csid`, `nev` FROM {mwb_csoportok}");
+  while($r = db_fetch_array($query)){
+    $GLOBALS['_wreplays_csoportok'][$r['csid']] = $r['nev'];
+  }
+}
+
+function wesnoth_hu_adminpage(){
+  // a fő admin oldal, innen ki lehet indulni
+
+  // content variable that will be returned for display
+  $page_content = '<p>A wesnoth.fsf.hu különböző szervezői funkcióit segítő oldal.</p><p>Ha bármilyen hibát találtok vagy szükségetek lenne valamilyen új funkcióra, keressétek <a href="'.url('user/165').'">Udit</a>!';
+
+  //$page_content .= drupal_get_form("mwb_sorsolas_csoportok");
+
+  //$page_content .= drupal_get_form("mwb_merkozesek");
+
+  $page_content .= drupal_get_form("mwb_admin_pontszamok_form");
+
+  $page_content .= drupal_get_form("mwb_admin_merkozesek_kiirasa_form");
+
+  return $page_content;
+} 
+
+function wesnoth_hu_perm() {
+  $perm = array(
+    // administer wesnoth
+    'access wesnoth admin',
+
+    // mwb
+    'administer mwb', 'access mwb', 'edit jelentkezesek',
+
+    // wesnoth_replays
+    'access wesnoth replays', 'administer wesnoth replays', 'edit any wesnoth replays', 'edit own wesnoth replays',
+  );
+  return $perm;
+}
+
+function wesnoth_hu_menu() {
+  $items = array();
+
+  $items['admin/wesnoth'] = array(
+    'title' => 'Wesnoth szervező',
+    'description' => 'A Magyar Wesnoth Közösség szervezését segítő oldal',
+    'page callback' => 'wesnoth_hu_adminpage',
+    'access arguments' => array('access wesnoth admin'),
+    'weight' => -50,
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $items['admin/wesnoth/attekintes'] = array(
+    'title' => 'Wesnoth szervező',
+    'description' => 'A Magyar Wesnoth Közösség szervezését segítő oldal',
+    'page callback' => 'wesnoth_hu_adminpage',
+    'access arguments' => array('access wesnoth admin'),
+    'weight' => -50,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  
+  $items['admin/wesnoth/verseny'] = array(
+    'title' => 'Versenyszervezés',
+    'description' => 'Általános versenyszervezői feladatok',
+    'page callback' => 'wesnoth_hu_verseny_adminpage',
+    'file' => 'verseny/verseny.inc',
+    'access arguments' => array('administer mwb'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  
+  $items['admin/wesnoth/verseny/merkozesek'] = array(
+    'title' => 'Mérkőzések szerkesztése',
+    'description' => 'Mérkőzéseket tudsz létrehozni.',
+    'page callback' => 'mwb_admin_merkozesek',
+    'file' => 'verseny/mwb.merkozesek.inc',
+    'access arguments' => array('administer mwb'),
+    'weight' => 2,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/wesnoth/verseny/merkozesek/%'] = array(
+    'title' => 'Mérkőzések szerkesztése',
+    'description' => 'Mérkőzéseket tudsz létrehozni.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mwb_admin_merkozesek_form'),
+    'file' => 'verseny/mwb.merkozesek.inc',
+    'access arguments' => array('administer mwb'),
+    'weight' => 2,
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/wesnoth/verseny/csoportok'] = array(
+    'title' => 'Csoportok szerkesztése',
+    'description' => 'Csoportokat tudsz létrehozni fordulóként maximum létszámmal.',
+    'page callback' => 'mwb_admin_csoportok',
+    'file' => 'verseny/mwb.csoportok.inc',
+    'access arguments' => array('administer mwb'),
+    'weight' => 2,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/wesnoth/verseny/csoportok/%'] = array(
+    'title' => 'Csoportok szerkesztése',
+    'description' => 'Csoportokat tudsz létrehozni fordulóként maximum létszámmal.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mwb_admin_csoportok_form'),
+    'file' => 'verseny/mwb.csoportok.inc',
+    'access arguments' => array('administer mwb'),
+    'weight' => 2,
+    'type' => MENU_CALLBACK,
+  );
+
+  /*  
+  $items['mwb_szervezo/helyreallitas'] = array(
+    'title' => 'Helyreállítás',
+    'description' => 'Főként a modul fejlesztése során volt hasznos, azonban az adatok elvesztésekor létfontosságú lehet.',
+    'page callback' => 'mwb_helyreallitas',
+    'file' => 'mwb.helyreallitas.inc',
+    'access arguments' => array('administer mwb'),
+    'weight' => 3,
+    'type' => MENU_LOCAL_TASK,
+  );
+  */
+
+  // VERSENY - jelentkezés
+  $items['user/%/verseny_jelentkezes'] = array(
+    'title' => 'Verseny jelentkezés',
+    'description' => 'Ezen az oldalon lehet jelentkezni az aktuális versenyre',
+    'page callback' => 'mwb_jelentkezes',
+    'page arguments' => array(1),
+    'file' => 'mwb.jelentkezes.inc',
+    'access arguments' => array('edit jelentkezesek'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5,
+  );
+ 
+  // VERSENY - jelentkezők
+  $items[$GLOBALS['_wesnoth_hu_verseny_tipus'].'/jelentkezok'] = array(
+    'title' => $GLOBALS['_wesnoth_hu_verseny_nev']. ' - Jelentkezők',
+    'description' => 'A versenyre jelentkezettek.',
+    'page callback' => 'mwb_jelentkezok',
+    'file' => 'verseny/mwb.jelentkezes.inc',
+    'access arguments' => array('access mwb'),
+    'weight' => 2,
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  //exit($GLOBALS['_wesnoth_hu_verseny_nev']);
+  
+  // VERSENY - pontszámok
+  $items[$GLOBALS['_wesnoth_hu_verseny_tipus'].'/allas'] = array(
+    'title' => $GLOBALS['_wesnoth_hu_verseny_nev']. ' - Verseny állása',
+    'description' => 'A verseny résztvevőinek pontszámai.',
+    'page callback' => 'mwb_csoportok',
+    'file' => 'verseny/mwb.csoportok.inc',
+    'access arguments' => array('access mwb'),
+    'weight' => 2,
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+
+  // VERSENY - mérkőzések
+  $items[$GLOBALS['_wesnoth_hu_verseny_tipus'].'/merkozesek'] = array(
+    'title' => $GLOBALS['_wesnoth_hu_verseny_nev'] . ' - Verseny mérkőzései',
+    'description' => 'Ezen az oldalon találod a verseny mérkőzéseit a csoportok és fordulók szerint.',
+    'page callback' => 'mwb_merkozesek',
+    'file' => 'verseny/mwb.merkozesek.inc',
+    'access arguments' => array('access mwb'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+ 
+  /* 
+  // Az eddigi versenyeken szerzett pontok stb. 
+  $items['user/%/wesnoth'] = array(
+    'title' => 'Wesnoth',
+    'description' => 'A játékkal kapcsolatos adataid',
+    'page callback' => 'mwb_profil',
+    'page arguments' => array(1),
+    'file' => 'mwb.profil.inc',
+    'access arguments' => array('edit jelentkezesek'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5,
+  );
+  */
+
+  return $items;
+}

@@ -1,0 +1,7 @@
+name = Magyar Wesnoth Közösség
+description = MWB rendezését segítő funkciók, visszajátszások feltöltése, egyéb funkciók a wesnoth.fsf.hu oldalhoz
+core = 6.x
+dependencies[] = profile
+dependencies[] = advanced_forum
+dependencies[] = download_count
+dependencies[] = transliteration

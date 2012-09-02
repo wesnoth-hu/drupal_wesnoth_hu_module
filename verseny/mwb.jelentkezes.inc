@@ -1,5 +1,7 @@
 <?php
 
+require_once 'verseny.inc';
+
 function mwb_jelentkezes($u){
   $GLOBALS['user_id'] = $u;
   $query = db_query("SELECT `name` FROM {users} WHERE `uid`=" . $u . " LIMIT 1");
@@ -247,48 +249,55 @@ function mwb_jelentkezes_access($op, $node, $account){
 }
 
 function mwb_jelentkezok(){
-    // adatok lekérdezése
-    // jelentkezés adatok
+  // adatok lekérdezése
+  // jelentkezés adatok
 	$jelentkezok = Array();
-    $query = db_query("SELECT * FROM {mwb_jelentkezok}");
-    while($r = db_fetch_array($query)){
-      $jelentkezok[$r['uid']] = $r;
+  $query = db_query("SELECT * FROM {mwb_jelentkezok}");
+  while($r = db_fetch_array($query)){
+    $jelentkezok[$r['uid']] = $r;
+  }
+  // ranglista adatok
+  $query = db_query("SELECT * FROM {profile_values} WHERE `fid`=14");
+  while($r = db_fetch_array($query)){
+    $ranglista[$r['uid']] = $r['value'];
+  }
+
+
+  $page_content = "<p>Eddigi jelentkezők száma: <b>" . count($jelentkezok) . "</b> fő.</p>";
+
+  // Tornához kell
+  //$page_content .= "<table class=\"mwb-tablazat\"><thead><tr><th style=\"width: 20%\">Név</th><th style=\"width: 10%\">Rangl. hely</th></tr></thead><tbody>";
+
+  // Bajnoksághoz kell
+  $page_content .= "<table><thead><tr><th style=\"width: 20%\">Név</th><th style=\"width: 10%\">Rangl. hely</th><th style=\"width: 10%\">Kiem. lemond</th><th style=\"width: 10%\">Faj</th><th style=\"width: 10%\">Vezér</th></tr></thead><tbody>";
+
+  $i = 0; 
+  foreach($jelentkezok as $jk => $je){
+    // $jk => uid, $jelentkezok => tomb minden adattal
+    $j = $jelentkezok[$jk];
+    $ranglistahely = $ranglista[$j['uid']];
+    $kiemeles = "";
+    if(!empty($ranglistahely)){
+      if($j['kiemeles'] == 0){
+        $kiemeles = 'nem';
+      }else{
+        $kiemeles = '<strong>igen</strong>';
+      }
     }
-    // ranglista adatok
-    $query = db_query("SELECT * FROM {profile_values} WHERE `fid`=14");
-    while($r = db_fetch_array($query)){
-      $ranglista[$r['uid']] = $r['value'];
+
+    // Torna táblázat
+    // $page_content .= "<tr><td>" . _mwb_uid2nick($jk) . "</td><td style=\"text-align: center\">". $ranglistahely ."</td></td></tr>";
+    if($i%2 != 0) {
+      $page_content .= '<tr class="odd">';
+    }else{
+      $page_content .= '<tr class="even">';
     }
+    $i++;
 
+    // Bajnokság táblázat
+    $page_content .= '<td>' . _mwb_uid2nick($jk) . "</td><td style=\"text-align: center\">". $ranglistahely ."</td><td>" . $kiemeles . "</td><td>". $GLOBALS['_mwb_fajok'][$j['faj']] . "</td><td>".$GLOBALS['_mwb_vezerek'][$j['vezer']] . "</td></tr>";
 
-    $page_content = "<p>Eddigi jelentkezők száma: <b>" . count($jelentkezok) . "</b> fő.</p>";
- 
-    // Tornához kell
-    //$page_content .= "<table class=\"mwb-tablazat\"><thead><tr><th style=\"width: 20%\">Név</th><th style=\"width: 10%\">Rangl. hely</th></tr></thead><tbody>";
-
-    // Bajnoksághoz kell
-    $page_content .= "<table class=\"mwb-tablazat\"><thead><tr><th style=\"width: 20%\">Név</th><th style=\"width: 10%\">Rangl. hely</th><th style=\"width: 10%\">Kiem. lemond</th><th style=\"width: 10%\">Faj</th><th style=\"width: 10%\">Vezér</th></tr></thead><tbody>";
-          
-    foreach($jelentkezok as $jk => $je){
-        // $jk => uid, $jelentkezok => tomb minden adattal
-        $j = $jelentkezok[$jk];
-        $ranglistahely = $ranglista[$j['uid']];
-        $kiemeles = "";
-        if(!empty($ranglistahely)){
-          if($j['kiemeles'] == 0){
-            $kiemeles = 'nem';
-          }else{
-            $kiemeles = '<strong>igen</strong>';
-          }
-        }
-        
-		// Torna táblázat
-        // $page_content .= "<tr><td>" . _mwb_uid2nick($jk) . "</td><td style=\"text-align: center\">". $ranglistahely ."</td></td></tr>";
-
-        // Bajnokság táblázat
-        $page_content .= "<tr><td>" . _mwb_uid2nick($jk) . "</td><td style=\"text-align: center\">". $ranglistahely ."</td><td>" . $kiemeles . "</td><td>". $GLOBALS['_mwb_fajok'][$j['faj']] . "</td><td>".$GLOBALS['_mwb_vezerek'][$j['vezer']] . "</td></tr>";
-
-     }
-     $page_content .= "</tbody></table>";
+  }
+  $page_content .= "</tbody></table>";
   return $page_content;
 }
