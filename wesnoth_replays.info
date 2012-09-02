@@ -1,7 +1,0 @@
-; $Id$
-name = Wesnoth Visszajátszások
-description = Harc Wesnothért visszajátszásokat tudsz vele feltölteni
-core = 6.x
-dependencies[] = mwb
-dependencies[] = transliteration
-package = wesnoth.fsf.hu

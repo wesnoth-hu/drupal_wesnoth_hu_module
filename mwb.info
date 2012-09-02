@@ -1,7 +1,0 @@
-; $Id$
-name = Magyar Wesnoth Bajnokság
-description = MWB rendezését segítő funkciók
-core = 6.x
-dependencies[] = profile
-; dependencies[] = wesnoth_replays
-package = wesnoth.fsf.hu
