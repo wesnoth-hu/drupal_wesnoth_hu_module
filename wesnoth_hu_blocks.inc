@@ -7,18 +7,13 @@
 * @param array $edit only for "save" operation
 */
 function wesnoth_hu_block($op = 'list', $delta = 0, $edit = array()) { 
-
   // set up an empty array which will contain the blocks
-  $blocks = array();
+  $block = array();
  
   switch ($op) {
     case 'list':
       $block['forum_comments'] = array(
         'info' => 'wesnoth.hu: Friss fórum hozzászólások',
-        'status' => TRUE, 
-        'weight' => 0, 
-        'visibility' => 1, 
-        'pages' => '<front>',
       );
       return $block;
       break;

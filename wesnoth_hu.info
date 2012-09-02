@@ -1,5 +1,6 @@
 name = Magyar Wesnoth Közösség
 description = MWB rendezését segítő funkciók, visszajátszások feltöltése, egyéb funkciók a wesnoth.fsf.hu oldalhoz
+version = 6.x-1.1
 core = 6.x
 dependencies[] = profile
 dependencies[] = advanced_forum
