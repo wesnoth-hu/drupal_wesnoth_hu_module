@@ -1,16 +1,8 @@
 <?php
 
-function wesnoth_replays_node_info() {
-  return array(
-    'wesnoth_replays' => array(
-      'name' => 'Wesnoth visszajátszás',
-      'module' => 'wesnoth_replays',
-      'description' => "A wesnoth visszajátszásokat lehet feltenni vele.",
-    )
-  );
-}
+require_once 'verseny/verseny.inc';
 
-function wesnoth_replays_access($op, $node, $account){
+function wesnoth_replay_access($op, $node, $account){
   // hozzáférések meghatározása
 
   // adatok lekérdezése
@@ -55,21 +47,27 @@ function _wreplays_uid2nick($id){
 	return $s;
 }
 
-function wesnoth_replays_merkozeshez($mid){
+function wesnoth_replay_merkozeshez($adatok){
+  $adatok['jatekos1'] = _wreplays_uid2nick($adatok['jatekos1']);
+  $adatok['jatekos2'] = _wreplays_uid2nick($adatok['jatekos2']);
+
   $node = new stdClass();
-  $node->type = 'wesnoth_replays';
-  $node->title = 'Wesnoth visszajátszás';
+  $node->type = 'wesnoth_replay';
+  $node->title = $adatok['jatekos1'].' vs. '. $adatok['jatekos2'];
   $node->body = '';
   $node->uid = 0;
   $node->status = 1;
-  $node->mid = $mid;
+  $node->mid = $adatok['mid'];
+  $node->palya = $adatok['palya'];
+  $node->jatekos1 = $adatok['jatekos1'];
+  $node->jatekos2 = $adatok['jatekos2'];
   $node->comment = 2; // legyen írható, olvasható
   $node->tipus = 'bajnoksag';
 
   node_save($node);
 }
 
-function wesnoth_replays_form(&$node, &$form_state){
+function wesnoth_replay_form(&$node, &$form_state){
   $uj = false;
   if($node->fid == 0){
     $uj = true;
@@ -189,32 +187,33 @@ function wesnoth_replays_form(&$node, &$form_state){
     '#title' => 'Visszajátszás verziója',
     '#description' => 'Kérlek add meg, hogy a játék melyik verziójával készült a visszajátszás!',
     '#options' => array(
-      '1-0' => '1.0',
-      '1-2' => '1.2',
-      '1-4' => '1.4',
-      '1-6' => '1.6',
-      '1-8' => '1.8',
+      '1-12' => '1.12',
       '1-10' => '1.10',
+      '1-8' => '1.8',
+      '1-6' => '1.6',
+      '1-4' => '1.4',
+      '1-2' => '1.2',
+      '1-0' => '1.0',
     ),
     '#default_value' => $node->verzio,
     '#weight' => -3,
   );
-  if($uj) $form['verzio']['#default_value'] = '1-8';
+  if($uj) $form['verzio']['#default_value'] = '1-10';
   
-  $form['#validate'] = array('wesnoth_replays_form_validate');
+  $form['#validate'] = array('wesnoth_replay_form_validate');
 
   return $form;
 }
 
-function wesnoth_replays_form_alter(&$form, $form_state, $form_id){
+function wesnoth_replay_form_alter(&$form, $form_state, $form_id){
   switch ($form_id) {
-    case 'wesnoth_replays_node_form':
+    case 'wesnoth_replay_node_form':
       unset($form['buttons']['delete']);
       break;
   }
 }
 
-function wesnoth_replays_form_validate($form, &$form_state){
+function wesnoth_replay_form_validate($form, &$form_state){
   $adatok = $form_state['values'];
   $fnev = $_FILES['files']['name']['visszajatszas'];
   $frissites = false;
@@ -273,13 +272,16 @@ function wesnoth_replays_form_validate($form, &$form_state){
   }
 }
 
-function wesnoth_replays_load($node){
+function wesnoth_replay_load($node){
   $additions = db_fetch_object(db_query('SELECT * FROM {wesnoth_replays} WHERE `nid`=%d', $node->nid));
-  $additions->gyoztes = _wreplays_uid2nick(db_result(db_query('SELECT `gyoztes` FROM {mwb_merkozesek} WHERE `mid`=%d', $additions->mid)));
+  if(isset($additions->mid) && $additions->mid > 0){
+    // ha van hozzá mérkőzés rendelve, akkor az adatok pontosabbak lehetnek
+    $additions->gyoztes = _wreplays_uid2nick(db_result(db_query('SELECT `gyoztes` FROM {mwb_merkozesek} WHERE `mid`=%d', $additions->mid)));
+  }
   return $additions;
 }
 
-function wesnoth_replays_insert(&$node){
+function wesnoth_replay_insert(&$node){
   db_query("INSERT INTO {wesnoth_replays} (`nid`, `fid`, `jatekos1`, `jatekos2`, `palya`, `verzio`, `tipus`, `mid`) VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', %d)", $node->nid, $fid, $node->jatekos1, $node->jatekos2, $node->palya, $node->verzio, $node->tipus, $node->mid);
   if ($node->fajl) {
     // Do something useful with the uploaded file
@@ -290,7 +292,7 @@ function wesnoth_replays_insert(&$node){
   }
 }
 
-function wesnoth_replays_update(&$node){
+function wesnoth_replay_update(&$node){
   db_query("UPDATE {wesnoth_replays} SET `nid`=%d, `jatekos1`='%s', `jatekos2`='%s', `palya`='%s', `verzio`='%s', `tipus`='%s', `mid`=%d WHERE `nid`=%d", $node->nid, $node->jatekos1, $node->jatekos2, $node->palya, $node->verzio, $node->tipus, $node->mid, $node->nid);
   if ($node->fajl) {
     // ellenőrizd, hogy volt-e már csatolva hozzá fájl, ha igen, akkor azt tedd törölhetővé
@@ -308,7 +310,7 @@ function wesnoth_replays_update(&$node){
 }
 
 /*
-function wesnoth_replays_delete(&$node){
+function wesnoth_replay_delete(&$node){
   db_query("DELETE FROM {node} WHERE `nid`=%d", $node->nid);
   db_query("DELETE FROM {node_revisions} WHERE `nid`=%d", $node->nid);
   if(module_exists('comment')){
@@ -320,15 +322,15 @@ function wesnoth_replays_delete(&$node){
 }
 */
 
-function wesnoth_replays_theme() {
-  return array(
-    'wreplays_mutasd' => array(
-      'arguments' => array('node'),
-    ),
+function wesnoth_replay_view($node, $teaser = FALSE, $page = FALSE){
+  $node->content['tartalom'] = array(
+    '#value' => theme('wreplay_mutasd', $node),
+    '#weight' => 1,
   );
+  return $node;
 }
 
-function theme_wreplays_mutasd($node){
+function theme_wreplay_mutasd($node){
   $display_text = "<p>";
   $display_text .= "<br />".$node->jatekos1 . " vs. ".$node->jatekos2;
   $display_text .= "<br />Pálya: ".$node->palya;
@@ -343,10 +345,3 @@ function theme_wreplays_mutasd($node){
   return $display_text;
 }
 
-function wesnoth_replays_view($node, $teaser = FALSE, $page = FALSE){
-  $node->content['tartalom'] = array(
-    '#value' => theme('wreplays_mutasd', $node),
-    '#weight' => 1,
-  );
-  return $node;
-}

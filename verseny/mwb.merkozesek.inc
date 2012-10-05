@@ -1,5 +1,7 @@
 <?php
 
+require_once 'verseny.inc';
+
 function mwb_merkozesek(){  
   $page_content = "";
   
@@ -15,7 +17,7 @@ function mwb_merkozesek(){
 	$page_content .= "<h3>Jelmagyarázat:</h3>";
 	$page_content .= "<ul><li><span class=\"mwb-gyoztes\">Játékos neve félkövéren</span>: a mérkőzés győztese.</li>";
 	$page_content .= "<li><span class=\"mwb-fiktiv\">Mérkőzés kékkel</span>: a mérkőzés nem került lejátszásra.</li>";
-	$page_content .= "<li><span class=\"mwb-kizarva\">Játékos neve kékkel</span>: a bajnokságról kizárt és szégyenfalra került játékos.</li>";
+	$page_content .= "<li><span class=\"mwb-kizarva\">Játékos neve kékkel</span>: a bajnokságról kizárt játékos.</li>";
 	$page_content .= "<li><span class=\"mwb-ellenorizendo\">Visszajátszás zölddel</span>: a visszajátszást még nem ellenőrizte le bíró.</li></ul>";
 	
   $csid = $GLOBALS['_mwb_alap_csoport'];
@@ -115,7 +117,7 @@ function mwb_merkozesek(){
           $page_content .= " - " . $palya[$me['palya']].'<br />';
 
           // mérkőzés szerkesztése
-          if(user_access('administer mwb')) $page_content .= '<a href="'. url('mwb_szervezo/merkozesek/'.$mid) .'" class="mwb-meta">Mérkőzés szerkesztése</a><br />';
+          if(user_access('administer mwb')) $page_content .= '<a href="'. url('admin/wesnoth/verseny/merkozesek/'.$mid) .'" class="mwb-meta">Mérkőzés szerkesztése</a><br />';
 
           if($GLOBALS['user']->uid == 165) $page_content .= '<span class="mwb-meta">(hibaelhárításhoz - mid: '. $mid. ', rid: '. $rid .', nid: ' . $nid .')</span><br />';
          
@@ -205,18 +207,20 @@ function mwb_admin_merkozesek(){
   $display_text .= "<p>Ezen az oldalon tudod létrehozni az új mérkőzéseket.";
   $display_text .= "<br />A csoportok változásait rögtön figyelemmel is kísérheted a <a href=\"" . url("bajnoksag/merkozesek") . "\">". url("bajnoksag/merkozesek") . "</a> oldalon.</p>";
   
-  $display_text .= "<p><a href=\"" . $base_url . url('mwb_szervezo/merkozesek/uj') . "\">Új mérkőzés hozzáadása</a></p>";
+  $display_text .= "<p><a href=\"" . $base_url . url('admin/wesnoth/verseny/merkozesek/uj') . "\">Új mérkőzés hozzáadása</a></p>";
   
   return $display_text;
 }
 
 function mwb_admin_merkozesek_form(&$form_state){
   $cs_uj = false;
-  if(arg(2) == 'uj' || $form_state['values']['uj'] == true) $cs_uj = true;
+  // admin/wesnoth/verseny/[uj|%]
+  $arg = arg(4);
+  if($arg == 'uj' || $form_state['values']['uj'] == true) $cs_uj = true;
   $a = array();
 
   if(!$cs_uj){
-    $query = db_query("SELECT * FROM {mwb_merkozesek} WHERE `mid`=" . arg(2) . " LIMIT 1");
+    $query = db_query("SELECT * FROM {mwb_merkozesek} WHERE `mid`=" . $arg . " LIMIT 1");
     $a = db_fetch_array($query);
   }
   
@@ -323,7 +327,7 @@ function mwb_admin_merkozesek_form(&$form_state){
 	);
 	if(!$cs_uj) $form['submit']['#value'] = 'Mentés';
 	
-  $form['#redirect'] = 'mwb_szervezo/merkozesek';
+  $form['#redirect'] = 'admin/wesnoth/verseny/merkozesek';
  
 	if(!$cs_uj){
 		$form['torol'] = array(
@@ -336,6 +340,8 @@ function mwb_admin_merkozesek_form(&$form_state){
 }
 
 function mwb_admin_merkozesek_form_submit($form, &$form_state){
+  require_once drupal_get_path('module', 'wesnoth_hu').'/wesnoth_hu_replays.inc';
+
   $adatok = $form_state['values'];
   $adatok['idopont'] = '0000-00-00 00:00:00';
   
@@ -345,7 +351,8 @@ function mwb_admin_merkozesek_form_submit($form, &$form_state){
       // a mérkőzések csoportba sikeresen felvettük, készítsük el rögtön a visszajátszást is
       $query = db_query("SELECT LAST_INSERT_ID()");
       $mid = db_result($query);
-      wesnoth_replays_merkozeshez($mid);
+      $adatok['mid'] = $mid; // tegyük bele az adatokba, hogy meglegyen a mérkőzések kiírásához
+      wesnoth_replay_merkozeshez($adatok);
       drupal_set_message("Új mérkőzés sikeresen hozzáadva!");
     }
   }else{

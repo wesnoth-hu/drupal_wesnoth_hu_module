@@ -6,6 +6,7 @@
 */
 
 require_once 'wesnoth_hu_blocks.inc';
+require_once 'wesnoth_hu_replays.inc';
 
 function wesnoth_hu_init(){
   //$GLOBALS['_mwb_jelentkezesi_idoszak'] = false;
@@ -14,7 +15,7 @@ function wesnoth_hu_init(){
   $GLOBALS['_wesnoth_hu_verseny_tipus'] = 'bajnoksag';
   $GLOBALS['_wesnoth_hu_verseny_nev'] = 'Magyar Wesnoth Bajnokság 2012';
   
-  $GLOBALS['_mwb_alap_csoport'] = 66;
+  $GLOBALS['_mwb_alap_csoport'] = 101;
 
   $GLOBALS['_mwb_fajok'] = array(
     'random' => "Véletlenszerű",
@@ -81,7 +82,7 @@ function wesnoth_hu_init(){
     'bajnoksag' => 'Bajnokság',
   );
 
-  $GLOBALS['_wreplays_bajnoksagmappa'] = '2011_mwb';
+  $GLOBALS['_wreplays_bajnoksagmappa'] = '2012_mwb';
   
   $GLOBALS['_wreplays_csoportok'] = array();
   $query = db_query("SELECT `csid`, `nev` FROM {mwb_csoportok}");
@@ -100,12 +101,30 @@ function wesnoth_hu_adminpage(){
 
   //$page_content .= drupal_get_form("mwb_merkozesek");
 
-  $page_content .= drupal_get_form("mwb_admin_pontszamok_form");
+  // $page_content .= drupal_get_form("mwb_admin_pontszamok_form");
 
-  $page_content .= drupal_get_form("mwb_admin_merkozesek_kiirasa_form");
+  // $page_content .= drupal_get_form("mwb_admin_merkozesek_kiirasa_form");
 
   return $page_content;
 } 
+
+function wesnoth_hu_theme() {
+  return array(
+    'wreplay_mutasd' => array(
+      'arguments' => array('node'),
+    ),
+  );
+}
+
+function wesnoth_hu_node_info() {
+  return array(
+    'wesnoth_replay' => array(
+      'name' => 'Wesnoth visszajátszás',
+      'module' => 'wesnoth_replay',
+      'description' => "Wesnoth visszajátszásokat lehet feltenni vele.",
+    )
+  );
+}
 
 function wesnoth_hu_perm() {
   $perm = array(
@@ -206,12 +225,15 @@ function wesnoth_hu_menu() {
   */
 
   // VERSENY - jelentkezés
-  $items['user/%/verseny_jelentkezes'] = array(
-    'title' => 'Verseny jelentkezés',
+  // azért tesszük bele az edit-be, hogy mások ne tudják szerkeszteni, csak ő, vagy az admin
+  $items['user/%/edit/'.$GLOBALS['_wesnoth_hu_verseny_tipus'].'_jelentkezes'] = array(
+//  $items['user/%/edit/verseny_jelentkezes'] = array(
+    'title' => ucfirst($GLOBALS['_wesnoth_hu_verseny_tipus']) . ' jelentkezés',
+//    'title' => 'Verseny jelentkezés',
     'description' => 'Ezen az oldalon lehet jelentkezni az aktuális versenyre',
     'page callback' => 'mwb_jelentkezes',
     'page arguments' => array(1),
-    'file' => 'mwb.jelentkezes.inc',
+    'file' => 'verseny/mwb.jelentkezes.inc',
     'access arguments' => array('edit jelentkezesek'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5,

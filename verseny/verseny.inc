@@ -190,17 +190,14 @@ function _mwb_pontszam_frissit($cs){
         $jatekosok[$r['jatekos1']]++;
         $jatekosok[$r['jatekos2']]++;
       }
-    }else if(_mwb_csoport_resze($cs, 66)){
-      // 2011-es MWB-n 3 pont jár a győzelemért, döntetlenért 1
+    }else{
+      // Újabb MWB-ken 3 pont jár a győzelemért, döntetlenért 1
       if($r['gyoztes'] > 1){
         $jatekosok[$r['gyoztes']] = $jatekosok[$r['gyoztes']]+3;
       }else if($r['gyoztes'] == 1){
         $jatekosok[$r['jatekos1']]++;
         $jatekosok[$r['jatekos2']]++;
       }
-    }else{
-      // tornákon általában 1 pont a győzelem
-      if($r['gyoztes'] != 0) $jatekosok[$r['gyoztes']]++;
     }
   }
   $s = serialize($jatekosok);
@@ -456,7 +453,7 @@ function mwb_admin_merkozesek_kiirasa_form_submit($form, &$form_state){
           // a pálya 2010 óta véletlenszerű, majd a játék eldönti
           $form_state['values']['palya'] = 'random';
           $form_state['values']['csoport'] = $csid;
-          module_load_include('inc', 'mwb', 'mwb.merkozesek');
+          module_load_include('inc', 'wesnoth_hu', 'verseny/mwb.merkozesek');
           drupal_execute('mwb_admin_merkozesek_form', $form_state);
 
           $szamlalo++;
